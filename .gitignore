@@ -1,0 +1,8 @@
+bot.cfg
+*.pyc
+*~
+graph.png
+telegram.db
+forito.bin
+corpus/
+
