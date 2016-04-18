@@ -89,8 +89,8 @@ def bcast_stats():
 	graph_statsFrom2(bot,expruebas_cid,3600*24,"Flood en el ultimo dia", True)
 	
 def bcast_stats_h():
-	statsFrom2(bot,expruebas_cid,3600,"Flood en la última hora",True)
-	graph_statsFrom2(bot,expruebas_cid,3600,"Flood en la ultima hora", True)
+	statsFrom2(bot,expruebas_cid,3600*12,"Flood en las últimas 12 horas",True)
+	graph_statsFrom2(bot,expruebas_cid,3600*12,"Flood en las ultimas 12 horas", True)
 	
 def check_forum(cid):
 	global oldTh
@@ -260,12 +260,84 @@ def lastwords(user):
 		traceback.print_exc()
 
 
-
+def replace_i(msg):
+	try:			
+		msg = msg.lower()
+		msg = msg.replace(u'gu',u'gui')
+		msg = msg.replace(u'ga',u'gui')
+		msg = msg.replace(u'go',u'gui')
+		msg = msg.replace(u'guii',u'gui')
+		msg = msg.replace(u'guií',u'guí')
+		
+		msg = msg.replace(u'gú',u'guí')
+		msg = msg.replace(u'gá',u'guí')
+		msg = msg.replace(u'gó',u'guí')
+		msg = msg.replace(u'guíi',u'guí')
+		
+		msg = msg.replace(u'za',u'ci')
+		msg = msg.replace(u'ze',u'ci')
+		msg = msg.replace(u'zo',u'ci')
+		msg = msg.replace(u'zu',u'ci')
+		
+		msg = msg.replace(u'zá',u'cí')
+		msg = msg.replace(u'zá',u'cí')
+		msg = msg.replace(u'zí',u'cí')
+		msg = msg.replace(u'zú',u'cí')
+		
+		msg = msg.replace(u'que',u'qui')
+		
+		msg = msg.replace(u'qué',u'quí')
+		
+		msg = msg.replace(u'ca',u'qui')
+		msg = msg.replace(u'co',u'qui')
+		msg = msg.replace(u'cu',u'qui')
+		
+		msg = msg.replace(u'cá',u'quí')
+		msg = msg.replace(u'có',u'quí')
+		msg = msg.replace(u'cú',u'quí')
+		
+		msg = msg.replace(u'a',u'i')
+		msg = msg.replace(u'e',u'i')
+		msg = msg.replace(u'o',u'i')
+		
+		msg = msg.replace(u'á',u'í')
+		msg = msg.replace(u'é',u'í')
+		msg = msg.replace(u'ó',u'í')
+		
+		msg = msg.replace(u'ú ',u'í ')
+		msg = msg.replace(u'ú ',u'í ')
+		msg = msg.replace(u' ú',u' í')
+		msg = msg.replace(u' ú',u' í')
+		
+		msg = re.sub(r'([bcdfhjklmnprstvwxyz ])u','\\1i',msg)
+		msg = re.sub(r'([bcdfhjklmnprstvwxyz ])ú','\\1í',msg)
+		
+		msg = re.sub(r'u([bcdfhjklmnprstvwxyz ])','i\\1',msg)
+		msg = re.sub(r'ú([bcdfhjklmnprstvwxyz ])','í\\1',msg)
+		
+		return msg
+	except:
+		traceback.print_exc()
 
 ########################################################################
 # Funciones del bot
 ########################################################################
 
+# Funcion de burla
+@bot.message_handler(commands=["burla"])
+def command_joke(m):
+	try:
+		cid = m.chat.id
+		msg = toUnicode(m.text)
+		msg_unparsed = re.match(r'/burla (.+)',msg)	
+		print "msg_unparsed:",msg_unparsed.group(1)
+		reply = replace_i(msg_unparsed.group(1))
+		print "Reply:",reply
+		bot.send_message(cid, reply, parse_mode="HTML")
+	except:
+		traceback.print_exc()
+		
+		
 # Funcion para responder al /me
 @bot.message_handler(commands=["me"]) 
 def command_me(m):
@@ -282,10 +354,10 @@ def command_me(m):
 		if msg_unparsed:
 			msgtext = msg_unparsed.group(1)
 			
-		if usernick in fanteables and fantasprob < random.random():
-			reply = random.choice(fantas)
-		else: 
-			reply = "<i>" + unicode(username) + " " + unicode(msgtext) + "</i>"
+		#if usernick in fanteables and fantasprob < random.random():
+		#	reply = random.choice(fantas)
+		#else: 
+		reply = "<i>" + unicode(username) + " " + unicode(msgtext) + "</i>"
 		
 		if usernick not in spammers:
 			bot.send_message(cid, reply, parse_mode="HTML")
@@ -419,6 +491,16 @@ def process_all(m):
 		update_msg(m)
 		msg_handler(m)
 		
+		# si el mensaje es medianamente largo y hay suerte, nos burlamos
+		if len(msgtext.split()) > 5:
+			if random.random() < 0.05:
+				try:
+					reply = replace_i(msgtext)
+					bot.reply_to(m, reply, parse_mode="HTML")
+					#~ bot.send_message(cid, reply, parse_mode="HTML")
+				except:
+					traceback.print_exc()		
+		
 	except:
 		traceback.print_exc()
 
@@ -453,32 +535,7 @@ def main():
 
 	# Lanzando hilos de scheduling
 	schedule.every().day.at("00:00").do(bcast_stats)
-	
-	# Lanzando resumenes de cada hora para que sea siempre a en punto
-	schedule.every().day.at("01:00").do(bcast_stats_h)
-	schedule.every().day.at("02:00").do(bcast_stats_h)
-	schedule.every().day.at("03:00").do(bcast_stats_h)
-	schedule.every().day.at("04:00").do(bcast_stats_h)
-	schedule.every().day.at("05:00").do(bcast_stats_h)
-	schedule.every().day.at("06:00").do(bcast_stats_h)
-	schedule.every().day.at("07:00").do(bcast_stats_h)
-	schedule.every().day.at("08:00").do(bcast_stats_h)
-	schedule.every().day.at("09:00").do(bcast_stats_h)
-	schedule.every().day.at("10:00").do(bcast_stats_h)
-	schedule.every().day.at("11:00").do(bcast_stats_h)
 	schedule.every().day.at("12:00").do(bcast_stats_h)
-	schedule.every().day.at("13:00").do(bcast_stats_h)
-	schedule.every().day.at("14:00").do(bcast_stats_h)
-	schedule.every().day.at("15:00").do(bcast_stats_h)
-	schedule.every().day.at("16:00").do(bcast_stats_h)
-	schedule.every().day.at("17:00").do(bcast_stats_h)
-	schedule.every().day.at("18:00").do(bcast_stats_h)
-	schedule.every().day.at("19:00").do(bcast_stats_h)
-	schedule.every().day.at("20:00").do(bcast_stats_h)
-	schedule.every().day.at("21:00").do(bcast_stats_h)
-	schedule.every().day.at("22:00").do(bcast_stats_h)
-	schedule.every().day.at("23:00").do(bcast_stats_h)
-	
 	# Este falla de momento
 	#schedule.every().hour.do(check_forum,expruebas_cid)
 	
