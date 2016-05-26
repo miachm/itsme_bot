@@ -33,7 +33,7 @@ except:
 	quit()
 	
 try:
-	TOKEN         = cfg_parser.get('settings', 'token')     # Bot token
+	TOKEN         = cfg_parser.get('settings', 'token')        # Bot token
 	expruebas_cid = cfg_parser.getint('settings', 'cid_group') # id del chat de grupo
 	my_cid        = cfg_parser.getint('settings', 'cid_user')  # id del chat individual
 	
@@ -84,6 +84,7 @@ def toUnicode(obj, encoding='utf-8'):
 ########################################################################
 
 def bcast_stats():
+	bot.send_message(expruebas_cid,"pole")
 	bot.send_message(expruebas_cid,"Nuevo día. Veamos las estadísticas:")
 	statsFrom2(bot,expruebas_cid,3600*24,"Flood en el último dia",True)
 	graph_statsFrom2(bot,expruebas_cid,3600*24,"Flood en el ultimo dia", True)
@@ -544,7 +545,13 @@ def main():
 	t.start()
 
 	# Obviar fallos de la API de Telegram
-	bot.polling(none_stop=True)
+	while True:
+		try:
+			bot.polling(none_stop=True)
+		except requests.exceptions.ConnectionError as e:
+			print >> sys.stderr, str(e)
+			time.sleep(15)
+	
 
 
 
