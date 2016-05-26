@@ -13,6 +13,7 @@ import sqlite3
 from datetime import datetime
 import threading
 import schedule
+import requests
 
 # Imports propios
 from bot_graphs import graph_statsFrom, graph_statsFrom2
@@ -64,7 +65,9 @@ spammers   = ['Erikoptero']
 spamreply  = ['Te pires', 'Pesao', 'Y sigue...', 'Paso de ti', 'Qué cansino joder']
 banreply   = ['¿No te cansas, parguela? Te ignoro un rato.']
 	
-	
+# modes
+jokesActive = False
+jokesProb   = 0.01
 	
 ########################################################################
 # Tratamiento de unicode: decode early, encode lazy
@@ -391,7 +394,63 @@ def command_lastwords(m):
 		bot.send_message(cid, reply, parse_mode="HTML")
 	except:
 		traceback.print_exc()
+
+# Funcion para deshabilitar las burlas
+@bot.message_handler(commands=["jokes"])
+def jokes(m):
+	global jokesActive
+	try:
+		usernick = m.from_user.username
+		cid = m.chat.id
+		print "[JOKES]",m.text
+		if usernick in admins:
+			match = re.match(r'/jokes(\@[Ii]tsme_[Kk]_bot)? +(\w+).*',m.text)
+			if match.group(2) == "on":
+				jokesActive = True
+				reply = "jokesActive -> True"
+			elif match.group(2) == "off":
+				jokesActive = False
+				reply = "jokesActive -> False"
+			elif match.group(2) == "status":
+				if jokesActive:
+					reply = "Activado"
+				else:
+					reply = "Desactivado"
+			else:
+				reply = "No entiendo: "+match.group(1)+"/"+match.group(2)
+			bot.send_message(cid, reply, parse_mode="HTML")
+		else:
+			bot.send_message(cid, warn_noadmin)		
+	except:
+		traceback.print_exc()
 		
+# Funcion para cambiar la probabilidad de las burlas
+@bot.message_handler(commands=["jokesprob"])
+def jokesprob(m):
+	global jokesActive
+	global jokesProb
+	try:
+		usernick = m.from_user.username
+		cid = m.chat.id
+		print "[JOKESPROB]",m.text
+		if usernick in admins:
+			match = re.match(r'/jokesprob(\@[Ii]tsme_[Kk]_bot)? *(\d\.\d+)?.*',m.text)
+			if match.group(2):
+				try:
+					aux = float(match.group(2))
+					if aux >= 0 and aux <= 1:
+						jokesProb = aux
+					reply = "Probabilidad -> "+str(jokesProb)
+				except ValueError:
+					reply = "La probabilidad debe ser un float entre 0 y 1"
+
+			else:
+				reply = "Probabilidad -> "+str(jokesProb)
+			bot.send_message(cid, reply, parse_mode="HTML")
+		else:
+			bot.send_message(cid, warn_noadmin)		
+	except:
+		traceback.print_exc()
 		
 # Funcion para listar mensajes
 @bot.message_handler(commands=["flooders"])
@@ -477,6 +536,8 @@ def newinpruebas(m):
 # Funcion general. 
 @bot.message_handler(func=lambda m: True)
 def process_all(m):
+	global jokesActive
+	global jokesProb
 	
 	try:
 		cid = m.chat.id
@@ -493,14 +554,15 @@ def process_all(m):
 		msg_handler(m)
 		
 		# si el mensaje es medianamente largo y hay suerte, nos burlamos
-		if len(msgtext.split()) > 5:
-			if random.random() < 0.05:
-				try:
-					reply = replace_i(msgtext)
-					bot.reply_to(m, reply, parse_mode="HTML")
-					#~ bot.send_message(cid, reply, parse_mode="HTML")
-				except:
-					traceback.print_exc()		
+		if jokesActive:
+			if len(msgtext.split()) > 5:
+				if random.random() < jokesProb:
+					try:
+						reply = replace_i(msgtext)
+						bot.reply_to(m, reply, parse_mode="HTML")
+						#~ bot.send_message(cid, reply, parse_mode="HTML")
+					except:
+						traceback.print_exc()		
 		
 	except:
 		traceback.print_exc()
