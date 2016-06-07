@@ -34,9 +34,9 @@ except:
 	quit()
 	
 try:
-	TOKEN         = cfg_parser.get('settings', 'token')        # Bot token
+	TOKEN		  = cfg_parser.get('settings', 'token')		   # Bot token
 	expruebas_cid = cfg_parser.getint('settings', 'cid_group') # id del chat de grupo
-	my_cid        = cfg_parser.getint('settings', 'cid_user')  # id del chat individual
+	my_cid		  = cfg_parser.getint('settings', 'cid_user')  # id del chat individual
 	
 	print TOKEN
 	print expruebas_cid
@@ -46,16 +46,16 @@ except:
 	traceback.print_exc()
 	quit()
 
-bot    = telebot.TeleBot(TOKEN) 
+bot	   = telebot.TeleBot(TOKEN) 
 oldTh  = bot_eolparser.loadThreads('forito.bin') 
 
-admins        = ["Korso10"]
+admins		  = ["Korso10"]
 warn_noadmin  = "Va a ser que no, parguela."
 
 
 # fantas
 fanteables = ['Reifeen', 'Miriamele', 'shenita91','Lazzeru']
-fantas     = ['¿Unas fantas, juapa?', '¡Fotoescote ya!', '¿Unas sidras, hermosa?']
+fantas	   = ['¿Unas fantas, juapa?', '¡Fotoescote ya!', '¿Unas sidras, hermosa?']
 fantasprob = 0.2
 
 # antispam
@@ -67,7 +67,7 @@ banreply   = ['¿No te cansas, parguela? Te ignoro un rato.']
 	
 # modes
 jokesActive = False
-jokesProb   = 0.01
+jokesProb	= 0.01
 	
 ########################################################################
 # Tratamiento de unicode: decode early, encode lazy
@@ -183,7 +183,7 @@ def update_msg(m, debug = False):
 		print "Error parseando mensaje (update_msg)"
 	
 	try:
-		checkuser   = "SELECT user,msgcount FROM lastmessage WHERE user = '"+user+"';"
+		checkuser	= "SELECT user,msgcount FROM lastmessage WHERE user = '"+user+"';"
 		update1_cmd = "UPDATE lastmessage SET msg = '"+msgtext+"' WHERE user = '"+user+"';"
 		update2_cmd = "UPDATE lastmessage SET time = '"+str(date)+"' WHERE user = '"+user+"';"
 		newuser_cmd = "INSERT INTO lastmessage VALUES('"+user+"',"+str(date)+",'"+msgtext+"',0)"
@@ -612,6 +612,12 @@ def main():
 			bot.polling(none_stop=True)
 		except requests.exceptions.ConnectionError as e:
 			print >> sys.stderr, str(e)
+			time.sleep(15)
+		except requests.exceptions.ReadTimeout as e:
+			print >> sys.stderr, str(e)
+			time.sleep(15)
+		except:
+			print "Unspected error"
 			time.sleep(15)
 	
 
