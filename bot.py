@@ -14,6 +14,7 @@ from datetime import datetime
 import threading
 import schedule
 import requests
+import sys
 
 # Imports propios
 from bot_graphs import graph_statsFrom, graph_statsFrom2
@@ -87,7 +88,7 @@ def toUnicode(obj, encoding='utf-8'):
 ########################################################################
 
 def bcast_stats():
-	bot.send_message(expruebas_cid,"pole")
+	#bot.send_message(expruebas_cid,"pole")
 	bot.send_message(expruebas_cid,"Nuevo día. Veamos las estadísticas:")
 	statsFrom2(bot,expruebas_cid,3600*24,"Flood en el último dia",True)
 	graph_statsFrom2(bot,expruebas_cid,3600*24,"Flood en el ultimo dia", True)
