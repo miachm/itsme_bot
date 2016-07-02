@@ -69,7 +69,11 @@ banreply   = ['¿No te cansas, parguela? Te ignoro un rato.']
 # modes
 jokesActive = False
 jokesProb	= 0.01
-	
+
+#gif clint
+poleReply = False
+clint = None
+
 ########################################################################
 # Tratamiento de unicode: decode early, encode lazy
 # http://farmdev.com/talks/unicode/
@@ -88,7 +92,9 @@ def toUnicode(obj, encoding='utf-8'):
 ########################################################################
 
 def bcast_stats():
+	global poleReply
 	#bot.send_message(expruebas_cid,"pole")
+	poleReply = True
 	bot.send_message(expruebas_cid,"Nuevo día. Veamos las estadísticas:")
 	statsFrom2(bot,expruebas_cid,3600*24,"Flood en el último dia",True)
 	graph_statsFrom2(bot,expruebas_cid,3600*24,"Flood en el ultimo dia", True)
@@ -334,7 +340,7 @@ def command_joke(m):
 	try:
 		cid = m.chat.id
 		msg = toUnicode(m.text)
-		msg_unparsed = re.match(r'/burla (.+)',msg)	
+		msg_unparsed = re.match(r'/burla (.+)',msg) 
 		print "msg_unparsed:",msg_unparsed.group(1)
 		reply = replace_i(msg_unparsed.group(1))
 		print "Reply:",reply
@@ -414,6 +420,35 @@ def jokes(m):
 				reply = "jokesActive -> False"
 			elif match.group(2) == "status":
 				if jokesActive:
+					reply = "Activado"
+				else:
+					reply = "Desactivado"
+			else:
+				reply = "No entiendo: "+match.group(1)+"/"+match.group(2)
+			bot.send_message(cid, reply, parse_mode="HTML")
+		else:
+			bot.send_message(cid, warn_noadmin)		
+	except:
+		traceback.print_exc()
+		
+# Funcion para deshabilitar las burlas
+@bot.message_handler(commands=["clint"])
+def clint(m):
+	global poleReply
+	try:
+		usernick = m.from_user.username
+		cid = m.chat.id
+		print "[CLINT]",m.text
+		if usernick in admins:
+			match = re.match(r'/clint(\@[Ii]tsme_[Kk]_bot)? +(\w+).*',m.text)
+			if match.group(2) == "on":
+				poleReply = True
+				reply = "clint -> True"
+			elif match.group(2) == "off":
+				poleReply = False
+				reply = "clint -> False"
+			elif match.group(2) == "status":
+				if poleReply:
 					reply = "Activado"
 				else:
 					reply = "Desactivado"
@@ -539,6 +574,8 @@ def newinpruebas(m):
 def process_all(m):
 	global jokesActive
 	global jokesProb
+	global poleReply
+	global clint
 	
 	try:
 		cid = m.chat.id
@@ -553,6 +590,11 @@ def process_all(m):
 		# Añadimos el mensaje a la db
 		update_msg(m)
 		msg_handler(m)
+		
+		if poleReply:
+			if msgtext == "pole":
+				bot.send_video(cid, clint, reply_to_message_id=m.message_id)
+				poleReply = False
 		
 		# si el mensaje es medianamente largo y hay suerte, nos burlamos
 		if jokesActive:
@@ -586,7 +628,7 @@ def delmsglog(m):
 
 
 def main():
-	
+	global clint
 
 	# db para ultimo mensaje
 	try:
@@ -597,6 +639,13 @@ def main():
 		if con:
 			con.close()
 
+	# lee gif
+	try:
+		clint = open('clint.mp4','rb')
+		print "clint.mp4 loaded"
+	except:
+		print "Can't load clint.mp4"
+		
 	# Lanzando hilos de scheduling
 	schedule.every().day.at("00:00").do(bcast_stats)
 	schedule.every().day.at("12:00").do(bcast_stats_h)
