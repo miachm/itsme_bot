@@ -149,11 +149,11 @@ def msg_handler(m):
 		
 	# Metemos el mensaje en la db temporal 
 	try:
-		newmsg = "INSERT INTO messagelog VALUES('%s', '%s', '%s', '%s', '%s')" % (mid, user, time, text, chatid)
+		newmsg = "INSERT INTO messagelog VALUES(?, ?, ?, ?, ?)"
 		con = sqlite3.connect('telegram.db')
 		cur = con.cursor()
 		
-		cur.execute(newmsg)
+		cur.execute(newmsg,(mid, user, time, text, chatid))
 		con.commit()
 		con.close()
 	except:
@@ -190,11 +190,10 @@ def update_msg(m, debug = False):
 		print "Error parseando mensaje (update_msg)"
 	
 	try:
-		checkuser	= "SELECT user,msgcount FROM lastmessage WHERE user = '"+user+"';"
-		update1_cmd = "UPDATE lastmessage SET msg = '"+msgtext+"' WHERE user = '"+user+"';"
-		update2_cmd = "UPDATE lastmessage SET time = '"+str(date)+"' WHERE user = '"+user+"';"
+		checkuser = "SELECT user,msgcount FROM lastmessage WHERE user = '"+user+"';"	
+		update_cmd = "UPDATE lastmessage SET msg = ?, time = ?, msgcount = msgcount+1 WHERE user = ?"
 		newuser_cmd = "INSERT INTO lastmessage VALUES('"+user+"',"+str(date)+",'"+msgtext+"',0)"
-	   
+
 		con = sqlite3.connect('telegram.db')
 		cur = con.cursor()
 		
@@ -209,9 +208,8 @@ def update_msg(m, debug = False):
 		# Si existe, actualizamos el ultimo mensaje
 		else:
 			print "Actualizando mensaje de",user
-			cur.execute(update1_cmd)
-			cur.execute(update2_cmd)
-			cur.execute("UPDATE lastmessage SET msgcount = "+str(int(data[1])+1)+" WHERE user ='"+user+"';")
+			cur.execute(update_cmd,(msgText,str(date),user))
+			
 		con.commit()
 		con.close()
 	except:
@@ -249,13 +247,13 @@ def showmsgcount(m, debug = False):
 # mensaje y que dijo
 def lastwords(user):
 	try:
-		checkwords = "SELECT msg, time FROM lastmessage WHERE user = '"+user+"';"
+		checkwords = "SELECT msg, time FROM lastmessage WHERE user = ?;"
 		
 		con = sqlite3.connect('telegram.db')
 		cur = con.cursor()
 		
 		# Verificamos si existe el usuario
-		cur.execute(checkwords)
+		cur.execute(checkwords,(user,))
 		data=cur.fetchone()
 		
 		# Si no existe, lo agregamos a la tabla
